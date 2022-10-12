@@ -6,3 +6,4 @@ infer-out
 tmp*
 .idea
 cmake-build-*
+PaddingByLevelSet/
