@@ -1,0 +1,60 @@
+---
+kind: pipeline
+type: docker
+name: lspadding
+steps:
+- name: restore-cache
+  image: d.ryon.ren:2443/drillster/drone-volume-cache
+  settings:
+    restore: true
+    mount:
+      - ./.cache
+      - ./build-drone
+  volumes:
+  - name: cache
+    path: /cache
+
+- name: build
+  image: d.ryon.ren:2443/cmake-gcc:12
+  environment:
+    id_ed25519:
+      from_secret: id_ed25519
+    CCACHE_COMPRESS: true
+    CCACHE_COMPRESSLEVEL: 6
+    CCACHE_MAXSIZE: 400M
+  commands:
+  - export CCACHE_BASEDIR=$PWD
+  - export CCACHE_DIR=$PWD/.cache/.ccache
+  - mkdir -p $HOME/.ssh && echo "$$id_ed25519" > $HOME/.ssh/id_ed25519 && chmod 600 $HOME/.ssh/id_ed25519
+  - ssh -T -o StrictHostKeyChecking=no git@ryon.ren -p 10022
+  - cmake -S . -B build-drone -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+  - cmake --build build-drone -j
+
+- name: rebuild-cache
+  image: d.ryon.ren:2443/drillster/drone-volume-cache
+  settings:
+    rebuild: true
+    mount:
+      - ./.cache
+      - ./build-drone
+  volumes:
+  - name: cache
+    path: /cache
+
+- name: test
+  image: d.ryon.ren:2443/cmake-gcc:12
+  commands:
+  - cd build-drone && CLICOLOR_FORCE=1 ctest -V
+
+
+trigger:
+  branch:
+  - master
+
+volumes:
+  - name: cache
+    host:
+      path: /tmp/cache/drone
+
+node:
+  machine_type: compute

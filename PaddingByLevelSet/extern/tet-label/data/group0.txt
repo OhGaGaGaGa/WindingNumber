@@ -1,0 +1,8 @@
+0 walls wall 0 3 2 1.2 -1
+1 inlet pressure-inlet 0
+2 outlet pressure-outlet 0
+3 interface_0_1 interface 0
+4 interface_2_3 interface 0
+5 interface_4_5 interface 0
+6 interface_6_7 interface 0
+7 interface_8_9 interface 0
