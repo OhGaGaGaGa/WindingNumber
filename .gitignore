@@ -1,4 +1,6 @@
 out
+PaddingByLevelSet*
+PaddingByLevelSet/
 build*
 .cache
 infer-out
@@ -6,4 +8,3 @@ infer-out
 tmp*
 .idea
 cmake-build-*
-PaddingByLevelSet/
