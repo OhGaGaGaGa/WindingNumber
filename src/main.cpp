@@ -58,7 +58,7 @@ int main() {
     Eigen::MatrixXd testV = random_points(TestSize,
         min0 - Padding, max0 + Padding,
         min1 - Padding, max1 + Padding,
-        min2 - Padding, min2 + Padding
+        min2 - Padding, max2 + Padding
     );
 
     std::array<double, TestSize> judge{ 0 };
