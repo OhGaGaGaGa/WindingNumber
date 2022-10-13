@@ -1,6 +1,6 @@
 #include "Meshs.h"
 
-double Meshs::calc_winding_value(Eigen::VectorXd p) {
+double Meshs::calc_winding_value(Eigen::VectorXd& p) {
     assert(p.size() == 3 && "Only support 3D data. ");
     double tot_w = 0;
     for (int f = 0; f < F.cols(); f++) {
