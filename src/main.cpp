@@ -31,12 +31,6 @@ int main() {
     Eigen::MatrixXi inputF;
     igl::readOBJ("../files/tiger-in.obj", inputV, inputF);
 
-    std::cout << inputF.cols() << std::endl;
-
-    for (int i = 0; i < inputF.cols(); i++)
-        std::cout << inputF(0, i) << " ";
-    std::cout << std::endl;
-
     Meshs meshs(inputV, inputF);
 
     double min0 = INT_MAX, max0 = INT_MIN;
@@ -51,9 +45,9 @@ int main() {
         max2 = std::max(max2, inputV(i, 2));
     }
 
-    cout << min0 << " " << max0 << endl;
-    cout << min1 << " " << max1 << endl;
-    cout << min2 << " " << max2 << endl;
+    // cout << min0 << " " << max0 << endl;
+    // cout << min1 << " " << max1 << endl;
+    // cout << min2 << " " << max2 << endl;
 
     Eigen::MatrixXd testV = random_points(TestSize,
         min0 - Padding, max0 + Padding,
@@ -67,8 +61,6 @@ int main() {
         Eigen::VectorXd tmpVec(3);
         tmpVec << testV(i, 0), testV(i, 1), testV(i, 2);
         judge[i] = meshs.calc_winding_value(tmpVec);
-
-        std::cout << judge[i] << " ";
     }
 
     VTKwriter writer("../files/tiger-out.vtk", testV, judge);
