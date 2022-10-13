@@ -4,6 +4,8 @@ void VTKwriter::write_colored_points() {
     std::ofstream out{ filepath.c_str() };
     using std::endl;
 
+    assert(out.is_open() && "Output path incorrect");
+
     out << "# vtk DataFile Version 2.0" << endl;
     out << "vtk output" << endl;
     out << "ASCII" << endl;
