@@ -1,8 +1,0 @@
-.cache/
-build/
-doc/
-**/data/*
-Dockerfile
-.dockerignore
-.git/
-.*

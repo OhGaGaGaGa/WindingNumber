@@ -1,3 +1,0 @@
-data/**/*.vtk filter=lfs diff=lfs merge=lfs -text
-data/*.vtk filter=lfs diff=lfs merge=lfs -text
-*.vtk filter=lfs diff=lfs merge=lfs -text
