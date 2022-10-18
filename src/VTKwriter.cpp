@@ -1,4 +1,5 @@
 #include "VTKwriter.h"
+#include <iostream>
 
 void VTKwriter::write_colored_points() {
     std::ofstream out{ filepath.c_str() };
@@ -34,12 +35,31 @@ void VTKwriter::write_colored_points() {
     out << "SCALARS color double 1" << endl;
     out << "LOOKUP_TABLE default" << endl;
 
+    std::vector<int> sort_arr(V.rows());
+
+    std::cout << "Min sa = " << min_sa << ", Max sa = " << max_sa << std::endl;
+
+    int min_tag = INT_MAX;
     for (int i = 0; i < V.rows(); i++) {
-        if (J[i] < -eps)
-            out << 1 << endl;
-        else if (-eps <= J[i] && J[i] <= eps)
-            out << 2 << endl;
-        else
-            out << 3 << endl;
+        sort_arr[i] = J[i]; // calc_category(J[i]);
+        min_tag = std::min(min_tag, sort_arr[i]);
+        // std::cout << J[i] << " " << calc_category(J[i]) << endl;
     }
+
+    std::cout << min_tag << endl;
+
+    for (int i = 0; i < V.rows(); i++) {
+        out << sort_arr[i] - min_tag << endl;
+        // std::cout << sort_arr[i] - min_tag << " ";
+    }
+    // std::cout << endl;
+
+    out.close();
+
+    std::ofstream cate_out{ "../files/cate_out.txt" };
+    for (auto a : sort_arr) {
+        cate_out << a << " ";
+    }
+    cate_out << std::endl;
+    cate_out.close();
 }
