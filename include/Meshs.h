@@ -15,6 +15,8 @@ public:
 private:
     Eigen::MatrixXd V;
     Eigen::MatrixXi F;
+
+    bool inside(double p, double x1, double x2, double x3);
 };
 
 #endif
