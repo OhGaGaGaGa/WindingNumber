@@ -9,3 +9,4 @@ infer-out
 tmp*
 .idea
 cmake-build-*
+compile_commands.json
