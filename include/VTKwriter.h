@@ -10,7 +10,7 @@
 
 class VTKwriter {
 public:
-    VTKwriter(const char* file, Eigen::MatrixXd& v, std::array<double, TestSize> j) : filepath(file), J{ 0 } {
+    VTKwriter(const char* file, Eigen::MatrixXd& v, const std::array<double, TestSize>& j) : filepath(file), J{ 0 } {
         assert(v.cols() == 3 && "Only support 3D data. ");
         assert(v.rows() == j.size() && "Test Data Size != Test Data Tag");
         V = v;

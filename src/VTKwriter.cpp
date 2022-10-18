@@ -50,16 +50,13 @@ void VTKwriter::write_colored_points() {
 
     for (int i = 0; i < V.rows(); i++) {
         out << sort_arr[i] - min_tag << endl;
-        // std::cout << sort_arr[i] - min_tag << " ";
+        // std::cout << (sort_arr[i] - min_tag) << " ";
     }
     // std::cout << endl;
-
-    out.close();
 
     std::ofstream cate_out{ "../files/cate_out.txt" };
     for (auto a : sort_arr) {
         cate_out << a << " ";
     }
     cate_out << std::endl;
-    cate_out.close();
 }
