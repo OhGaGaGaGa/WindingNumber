@@ -38,6 +38,9 @@ Eigen::MatrixXd(3, 3) <<
     0.0,0.0,0.0,
     0.0,0.0,1.0,
     0.0,1.0,0.0;
+
+// For some new versions
+Eigen::Vector3d tmpVec{ {testV(i, 0), testV(i, 1), testV(i, 2)} };
 ```
 
 ## Size
@@ -51,7 +54,7 @@ v.resize(5);
 
 如果对指定大小的 Matrix 进行与定义不同的 `resize()`, 会报错
 
-？？ 如果matrix的实际大小不改变，resize函数不做任何操作。resize操作会执行析构函数：元素的值会被改变，如果不想改变执行 conservativeResize()。
+？？ 如果matrix的实际大小不改变, resize函数不做任何操作。resize操作会执行析构函数: 元素的值会被改变, 如果不想改变, 执行 conservativeResize()。
 
 ## Assignment
 
