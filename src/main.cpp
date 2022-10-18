@@ -25,11 +25,11 @@ Eigen::MatrixXd random_points(int cnt, double l0, double r0, double l1, double r
 }
 
 int main() {
-    srand(10);
+    srand(time(nullptr));
 
     Eigen::MatrixXd inputV;
     Eigen::MatrixXi inputF;
-    igl::readOBJ("../files/tiger-in.obj", inputV, inputF);
+    igl::readOBJ("../files/cube-in.obj", inputV, inputF);
 
     Meshs meshs(inputV, inputF);
 
@@ -56,14 +56,23 @@ int main() {
     );
 
     std::array<double, TestSize> judge{ 0 };
+    std::array<double, TestSize> origin_judge{ 0 };
 
     for (int i = 0; i < testV.rows(); i++) {
         Eigen::VectorXd tmpVec(3);
         tmpVec << testV(i, 0), testV(i, 1), testV(i, 2);
-        judge[i] = meshs.calc_winding_value(tmpVec);
+        judge[i] = meshs.calc_winding_value(tmpVec) >= 0 ? 1 : 0;
+        origin_judge[i] = meshs.calc_winding_value(tmpVec);
     }
 
-    VTKwriter writer("../files/tiger-out.vtk", testV, judge);
+    std::ofstream out_w{ "../files/cube-judge-out.txt" };
+    for (int i = 0; i < testV.rows(); i++) {
+        out_w << origin_judge[i] << " " << judge[i] << std::endl;
+    }
+    out_w << std::endl;
+    out_w.close();
+
+    VTKwriter writer("../files/cube-out.vtk", testV, judge);
     writer.write_colored_points();
 
     return 0;
