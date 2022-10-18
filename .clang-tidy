@@ -16,7 +16,7 @@ CheckOptions:
     value: lower_case
   - key: readability-identifier-naming.GlobalConstantCase
     value: aNy_CasE
-  - key: readability-identifier-naming.PrivateMemberSuffix
+  - key: readability-identifier-naming.PrivateMemberPrefix
     value: _
   - key: misc-assert-side-effect.CheckFunctionCalls
     value: 1
