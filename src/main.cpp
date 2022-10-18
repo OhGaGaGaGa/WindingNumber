@@ -59,8 +59,7 @@ int main() {
     std::array<double, TestSize> origin_judge{ 0 };
 
     for (int i = 0; i < testV.rows(); i++) {
-        Eigen::VectorXd tmpVec(3);
-        tmpVec << testV(i, 0), testV(i, 1), testV(i, 2);
+        Eigen::Vector3d tmpVec{ {testV(i, 0), testV(i, 1), testV(i, 2)} };
         judge[i] = meshs.calc_winding_value(tmpVec) >= 0 ? 1 : 0;
         origin_judge[i] = meshs.calc_winding_value(tmpVec);
     }
