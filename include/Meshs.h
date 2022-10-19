@@ -5,14 +5,14 @@
 
 class Meshs {
 public:
-    Meshs(Eigen::MatrixXd& v, Eigen::MatrixXi& f) :_V(v), _F(f) {
+    Meshs(Eigen::MatrixXd& v, Eigen::MatrixXi& f) :_vertex(v), _mesh(f) {
         assert(f.cols() == 3 && "Only support 3D data. ");
     }
-    double calc_winding_value(Eigen::Vector3d& p);
+    double calc_winding_value(const Eigen::Vector3d& p);
 
 private:
-    Eigen::MatrixXd _V;
-    Eigen::MatrixXi _F;
+    Eigen::MatrixXd _vertex;
+    Eigen::MatrixXi _mesh;
 
     bool inside(double p, double x1, double x2, double x3);
 };

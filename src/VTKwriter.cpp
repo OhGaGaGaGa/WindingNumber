@@ -2,61 +2,37 @@
 #include <iostream>
 
 void VTKwriter::write_colored_points() {
-    std::ofstream out{ filepath.c_str() };
     using std::endl;
 
-    assert(out.is_open() && "Output path incorrect");
+    _out << "# vtk DataFile Version 2.0" << endl;
+    _out << "vtk output" << endl;
+    _out << "ASCII" << endl;
+    _out << "DATASET UNSTRUCTURED_GRID" << endl;
 
-    out << "# vtk DataFile Version 2.0" << endl;
-    out << "vtk output" << endl;
-    out << "ASCII" << endl;
-    out << "DATASET UNSTRUCTURED_GRID" << endl;
-
-    out << "POINTS " << V.rows() << " double" << endl;
-    for (int i = 0; i < V.rows(); i++) {
-        for (int j = 0; j < V.cols(); j++)
-            out << V(i, j) << " ";
-        out << endl;
+    _out << "POINTS " << _vertex.rows() << " double" << endl;
+    for (int i = 0; i < _vertex.rows(); i++) {
+        for (int j = 0; j < _vertex.cols(); j++)
+            _out << _vertex(i, j) << " ";
+        _out << endl;
     }
-    out << endl;
+    _out << endl;
 
-    out << "CELLS " << V.rows() << " " << V.rows() * 2 << endl;
-    for (int i = 0; i < V.rows(); i++) {
-        out << "1 " << i << endl;
+    _out << "CELLS " << _vertex.rows() << " " << _vertex.rows() * 2 << endl;
+    for (int i = 0; i < _vertex.rows(); i++) {
+        _out << "1 " << i << endl;
     }
-    out << endl;
+    _out << endl;
 
-    out << "CELL_TYPES " << V.rows() << endl;
-    for (int i = 0; i < V.rows(); i++)
-        out << 1 << endl;
-    out << endl;
+    _out << "CELL_TYPES " << _vertex.rows() << endl;
+    for (int i = 0; i < _vertex.rows(); i++)
+        _out << 1 << endl;
+    _out << endl;
 
-    out << "POINT_DATA " << V.rows() << endl;
-    out << "SCALARS color double 1" << endl;
-    out << "LOOKUP_TABLE default" << endl;
+    _out << "POINT_DATA " << _vertex.rows() << endl;
+    _out << "SCALARS color double 1" << endl;
+    _out << "LOOKUP_TABLE default" << endl;
 
-    std::vector<int> sort_arr(V.rows());
-
-    std::cout << "Min sa = " << min_sa << ", Max sa = " << max_sa << std::endl;
-
-    int min_tag = INT_MAX;
-    for (int i = 0; i < V.rows(); i++) {
-        sort_arr[i] = J[i]; // calc_category(J[i]);
-        min_tag = std::min(min_tag, sort_arr[i]);
-        // std::cout << J[i] << " " << calc_category(J[i]) << endl;
+    for (auto i = 0; i < _vertex.rows(); i++) {
+        _out << _category[i] << endl;
     }
-
-    std::cout << min_tag << endl;
-
-    for (int i = 0; i < V.rows(); i++) {
-        out << sort_arr[i] - min_tag << endl;
-        // std::cout << (sort_arr[i] - min_tag) << " ";
-    }
-    // std::cout << endl;
-
-    std::ofstream cate_out{ "../files/cate_out.txt" };
-    for (auto a : sort_arr) {
-        cate_out << a << " ";
-    }
-    cate_out << std::endl;
 }

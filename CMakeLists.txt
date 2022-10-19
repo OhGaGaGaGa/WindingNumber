@@ -13,6 +13,6 @@ target_compile_features(wn_lib INTERFACE cxx_std_20)
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include/)
 
-add_executable(wn src/main.cpp src/Meshs.cpp src/VTKwriter.cpp)
+add_executable(wn src/main.cpp src/random_points.cpp src/Meshs.cpp src/VTKwriter.cpp)
 target_link_libraries(wn PUBLIC wn_lib)
 target_compile_features(wn PUBLIC cxx_std_20)

@@ -1,6 +1,4 @@
 #include <iostream>
-#include <cstdlib>
-#include <ctime>
 #include <igl/readOBJ.h>
 #include <igl/writeOBJ.h>
 #include <igl/solid_angle.h>
@@ -10,69 +8,93 @@
 
 using namespace std;
 
-double random_from_to(double left, double right) {
-    return left + (right - left) * rand() / RAND_MAX;
+// #define CALC_CUBE
+
+Eigen::MatrixXd get_random_points(const Eigen::MatrixXd& V);
+
+inline int calc_category(double x) {
+    assert(-1 - EPS < x&& x < 1 + EPS && "winding value invalid. ");
+
+    if (x < -1 + EPS) return 1;
+    else if (-1 + EPS <= x && x < -EPS) return 2;
+    else if (-EPS <= x && x <= EPS) return 3;
+    else if (EPS < x && x <= 1 - EPS) return 4;
+    else if (1 - EPS < x) return 5;
+    return 0;
 }
 
-Eigen::MatrixXd random_points(int cnt, double l0, double r0, double l1, double r1, double l2, double r2) {
-    Eigen::MatrixXd ret(cnt, 3);
-    for (int i = 0; i < cnt; i++) {
-        ret(i, 0) = random_from_to(l0, r0);
-        ret(i, 1) = random_from_to(l1, r1);
-        ret(i, 2) = random_from_to(l2, r2);
+int main(int argc, char* argv[]) {
+    std::string input_filepath, test_point_filepath, winding_value_filepath, output_filepath;
+    if (argc == 1) {
+        input_filepath = "../files/tiger-in.obj";
+        test_point_filepath = "../files/cube-test-out.txt";
+        winding_value_filepath = "../files/cube-judge-out.txt";
+        output_filepath = "../files/tiger-out.vtk";
     }
-    return ret;
-}
-
-int main() {
-    srand(time(nullptr));
+    else if (argc == 5) {
+        input_filepath = argv[1];
+        test_point_filepath = argv[2];
+        winding_value_filepath = argv[3];
+        output_filepath = argv[4];
+    }
+    else {
+        cout << "Incorrect Usage. \n";
+        return 0;
+    }
 
     Eigen::MatrixXd inputV;
     Eigen::MatrixXi inputF;
-    igl::readOBJ("../files/cube-in.obj", inputV, inputF);
+
+    // TODO: use argv to readin the input file name
+    // BUG: no file reading/writing error check
+    bool read_input_status = igl::readOBJ(input_filepath, inputV, inputF);
+    if (!read_input_status) {
+        cout << "Input File Error. \n";
+        return 0;
+    }
 
     Meshs meshs(inputV, inputF);
 
-    double min0 = INT_MAX, max0 = INT_MIN;
-    double min1 = INT_MAX, max1 = INT_MIN;
-    double min2 = INT_MAX, max2 = INT_MIN;
-    for (int i = 0; i < inputV.rows(); i++) {
-        min0 = std::min(min0, inputV(i, 0));
-        max0 = std::max(max0, inputV(i, 0));
-        min1 = std::min(min1, inputV(i, 1));
-        max1 = std::max(max1, inputV(i, 1));
-        min2 = std::min(min2, inputV(i, 2));
-        max2 = std::max(max2, inputV(i, 2));
-    }
+    auto testV = get_random_points(inputV);
 
-    // cout << min0 << " " << max0 << endl;
-    // cout << min1 << " " << max1 << endl;
-    // cout << min2 << " " << max2 << endl;
+    testV.row(0) = Eigen::Vector3d{ 0.5, 0, 0 };
+    testV.row(1) = Eigen::Vector3d{ 0.5, 0, 0.2 };
+    testV.row(2) = Eigen::Vector3d{ 0.5, 0, 0.5 };
 
-    Eigen::MatrixXd testV = random_points(TestSize,
-        min0 - Padding, max0 + Padding,
-        min1 - Padding, max1 + Padding,
-        min2 - Padding, max2 + Padding
-    );
-
-    std::array<double, TestSize> judge{ 0 };
-    std::array<double, TestSize> origin_judge{ 0 };
+    std::array<double, TESTSIZE> w{ 0 };
+    std::array<int, TESTSIZE> judge{ 0 };
 
     for (int i = 0; i < testV.rows(); i++) {
+        // TODO: w[i] = meshs.calc_winding_value(testV.row(i));
         Eigen::Vector3d tmpVec{ {testV(i, 0), testV(i, 1), testV(i, 2)} };
-        judge[i] = meshs.calc_winding_value(tmpVec) >= 0 ? 1 : 0;
-        origin_judge[i] = meshs.calc_winding_value(tmpVec);
+        // Eigen::Vector3d tmpVec{ testV.row(i) };
+        w[i] = meshs.calc_winding_value(tmpVec);
+        judge[i] = calc_category(w[i]);
+
+#ifdef CALC_CUBE
+        // TODO: fabs(testV(i,k)-0.5)
+        if (testV(i, 0) < 0 || testV(i, 0) > 1 || testV(i, 1) < 0 || testV(i, 1) > 1 || testV(i, 2) < 0 || testV(i, 2) > 1)
+            assert(judge[i] == 3 && "Point should be outside");
+#endif
+    }
+    cout << "hello\n";
+    {
+        // TODO: argv, and open write error check
+        std::ofstream out_test{ test_point_filepath };
+        for (int i = 0; i < testV.rows(); i++) {
+            out_test << "Point " << i << ": \t" << testV(i, 0) << " " << testV(i, 1) << " " << testV(i, 2) << '\n';
+        }
+        out_test << '\n';
+    }
+    {
+        std::ofstream out_w{ winding_value_filepath };
+        for (int i = 0; i < testV.rows(); i++) {
+            out_w << w[i] << " " << judge[i] << '\n';
+        }
+        out_w << '\n';
     }
 
-    std::ofstream out_w{ "../files/cube-judge-out.txt" };
-    for (int i = 0; i < testV.rows(); i++) {
-        out_w << origin_judge[i] << " " << judge[i] << std::endl;
-    }
-    out_w << std::endl;
-    out_w.close();
-
-    VTKwriter writer("../files/cube-out.vtk", testV, judge);
+    VTKwriter writer(output_filepath.c_str(), testV, judge);
     writer.write_colored_points();
-
     return 0;
 }

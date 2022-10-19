@@ -1,15 +1,15 @@
 #include "Meshs.h"
-
+#include "Constants.h"
 #include <iostream>
 
-double Meshs::calc_winding_value(Eigen::Vector3d& p) {
+double Meshs::calc_winding_value(const Eigen::Vector3d& p) {
     double tot_w = 0;
-    std::cerr << "Query Point: " << p(0) << " " << p(1) << " " << p(2) << std::endl;
     for (int f = 0; f < _mesh.rows(); f++) {
-        tot_w += igl::solid_angle(_vertex.row(_mesh(f, 0)), _vertex.row(_mesh(f, 1)), _vertex.row(_mesh(f, 2)), p);
-        std::cerr << igl::solid_angle(_vertex.row(_mesh(f, 0)), _vertex.row(_mesh(f, 1)), _vertex.row(_mesh(f, 2)), p) << " ";
+        double solid_angle = igl::solid_angle(_vertex.row(_mesh(f, 0)), _vertex.row(_mesh(f, 1)), _vertex.row(_mesh(f, 2)), p);
+        if (solid_angle > -0.5 - EPS && solid_angle < -0.5 + EPS || solid_angle > 0.5 - EPS && solid_angle < 0.5 + EPS)
+            solid_angle = 0;
+        tot_w += solid_angle;
     }
-    std::cerr << std::endl;
     return tot_w;
 }
 

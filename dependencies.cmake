@@ -12,6 +12,28 @@ CPMAddPackage(
 )
 
 CPMAddPackage(
+    NAME "VTK"
+    GIT_REPOSITORY "https://__mirror:mirror@ryon.ren:2443/mirrors/VTK.git"
+    GIT_TAG "v9.1.0"
+    GIT_SUBMODULES ""
+    OPTIONS
+    "VTK_ENABLE_LOGGING OFF"
+    "VTK_ENABLE_REMOTE_MODULES OFF"
+    "VTK_FORBID_DOWNLOADS ON"
+    "VTK_GROUP_ENABLE_Imaging DONT_WANT"
+    "VTK_GROUP_ENABLE_MPI DONT_WANT"
+    "VTK_GROUP_ENABLE_Qt DONT_WANT"
+    "VTK_GROUP_ENABLE_Rendering DONT_WANT"
+    "VTK_GROUP_ENABLE_StandAlone DONT_WANT"
+    "VTK_GROUP_ENABLE_Views DONT_WANT"
+    "VTK_GROUP_ENABLE_Web DONT_WANT"
+    "VTK_INSTALL_SDK OFF"
+    "VTK_ENABLE_WRAPPING OFF"
+    "VTK_MODULE_ENABLE_VTK_IOLegacy YES"
+)
+
+
+CPMAddPackage(
     NAME "fmt"
     GIT_REPOSITORY "https://__mirror:mirror@ryon.ren:2443/mirrors/fmt.git"
     GIT_TAG "8.0.1"
