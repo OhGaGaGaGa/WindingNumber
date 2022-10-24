@@ -8,13 +8,12 @@
 
 using namespace std;
 
-// #define CALC_CUBE
-
 Eigen::MatrixXd get_random_points(const Eigen::MatrixXd& V);
 
 inline int calc_category(double x) {
     assert(-1 - EPS < x&& x < 1 + EPS && "winding value invalid. ");
 
+    // Maybe can adjust condition order
     if (x < -1 + EPS) return 1;
     else if (-1 + EPS <= x && x < -EPS) return 2;
     else if (-EPS <= x && x <= EPS) return 3;
@@ -23,24 +22,23 @@ inline int calc_category(double x) {
     return 0;
 }
 
-int main(int argc, char* argv[]) {
+// #define INPUT_FILE_PATH_MANUALLY
+
+int main(int argc, char const* argv[]) {
     std::string input_filepath, test_point_filepath, winding_value_filepath, output_filepath;
-    if (argc == 1) {
-        input_filepath = "../files/tiger-in.obj";
-        test_point_filepath = "../files/cube-test-out.txt";
-        winding_value_filepath = "../files/cube-judge-out.txt";
-        output_filepath = "../files/tiger-out.vtk";
-    }
-    else if (argc == 5) {
-        input_filepath = argv[1];
-        test_point_filepath = argv[2];
-        winding_value_filepath = argv[3];
-        output_filepath = argv[4];
-    }
-    else {
-        cout << "Incorrect Usage. \n";
-        return 0;
-    }
+
+#ifndef INPUT_FILE_PATH_MANUALLY
+    input_filepath = "../files/tiger-in.obj";
+    test_point_filepath = "../files/tiger-test-out.txt";
+    winding_value_filepath = "../files/tiger-judge-out.txt";
+    output_filepath = "../files/tiger-out.vtk";
+#endif
+#ifdef INPUT_FILE_PATH_MANUALLY
+    input_filepath = argv[1];
+    test_point_filepath = argv[2];
+    winding_value_filepath = argv[3];
+    output_filepath = argv[4];
+#endif
 
     Eigen::MatrixXd inputV;
     Eigen::MatrixXi inputF;
@@ -57,10 +55,6 @@ int main(int argc, char* argv[]) {
 
     auto testV = get_random_points(inputV);
 
-    testV.row(0) = Eigen::Vector3d{ 0.5, 0, 0 };
-    testV.row(1) = Eigen::Vector3d{ 0.5, 0, 0.2 };
-    testV.row(2) = Eigen::Vector3d{ 0.5, 0, 0.5 };
-
     std::array<double, TESTSIZE> w{ 0 };
     std::array<int, TESTSIZE> judge{ 0 };
 
@@ -70,12 +64,6 @@ int main(int argc, char* argv[]) {
         // Eigen::Vector3d tmpVec{ testV.row(i) };
         w[i] = meshs.calc_winding_value(tmpVec);
         judge[i] = calc_category(w[i]);
-
-#ifdef CALC_CUBE
-        // TODO: fabs(testV(i,k)-0.5)
-        if (testV(i, 0) < 0 || testV(i, 0) > 1 || testV(i, 1) < 0 || testV(i, 1) > 1 || testV(i, 2) < 0 || testV(i, 2) > 1)
-            assert(judge[i] == 3 && "Point should be outside");
-#endif
     }
     cout << "hello\n";
     {

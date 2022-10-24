@@ -11,7 +11,7 @@
 
 class VTKwriter {
 public:
-    VTKwriter(const char* file, Eigen::MatrixXd v, const std::array<int, TESTSIZE>& j) : _out(file), _vertex(std::move(v)), _category(j) {
+    VTKwriter(const char* file, const Eigen::MatrixXd& v, const std::array<int, TESTSIZE>& j) : _out(file), _vertex(v), _category(j) {
         assert(v.cols() == 3 && "Only support 3D data. ");
         assert(v.rows() == j.size() && "Test Data Size != Test Data Tag");
         assert(_out.is_open() && "Output path incorrect");
