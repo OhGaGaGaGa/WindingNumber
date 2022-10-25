@@ -2,7 +2,7 @@
 #define _constants_h
 
 const double PADDING = 0.1;
-const int TESTSIZE = 3000;
+const int TESTSIZE = 1000;
 const double EPS = 1e-5;
 
 #endif

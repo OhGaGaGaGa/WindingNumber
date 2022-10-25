@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.23)
+
+set(CMAKE_CXX_COMPILER "/usr/bin/g++-11")
+
 project(WindingNumber)
 
 include(cmake/get_cpm.cmake)
@@ -16,6 +19,6 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include/)
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
-add_executable(wn src/main.cpp src/random_points.cpp src/Meshs.cpp src/VTKwriter.cpp)
+add_executable(wn src/main.cpp src/io.cpp src/random_points.cpp src/Meshs.cpp src/VTKwriter.cpp src/VTKreader.cpp)
 target_link_libraries(wn PUBLIC wn_lib)
 target_compile_features(wn PUBLIC cxx_std_20)

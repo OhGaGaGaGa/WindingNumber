@@ -1,6 +1,6 @@
 ## Cell Type Representation
 
-![查看源图像](https://ohg-typora-image.oss-cn-hangzhou.aliyuncs.com/imgs/202210181619553.png)
+![image-20221025125908904](https://ohg-typora-image.oss-cn-hangzhou.aliyuncs.com/imgs/202210251259032.png)
 
 ## Some Manual C++ Output Code - Vertex
 
