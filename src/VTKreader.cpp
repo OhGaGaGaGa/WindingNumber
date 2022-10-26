@@ -3,7 +3,6 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-#include <exception>
 
 void VTKreader::read_from_file() {
     std::string line;

@@ -6,12 +6,11 @@
 #include <cmath>
 #include <Eigen/Dense>
 #include <utility>
-#include "Constants.h"
 #include "Eigen/src/Core/Matrix.h"
 
 class VTKwriter {
 public:
-    VTKwriter(const char* file, const Eigen::MatrixXd& v, const std::array<int, TESTSIZE>& j) : _out(file), _vertex(v), _category(j) {
+    VTKwriter(const char* file, const Eigen::MatrixXd& v, const std::vector<int>& j) : _out(file), _vertex(v), _category(j) {
         assert(v.cols() == 3 && "Only support 3D data. ");
         assert(v.rows() == j.size() && "Test Data Size != Test Data Tag");
     }
@@ -22,8 +21,8 @@ public:
 
 private:
     std::ofstream _out;
-    Eigen::MatrixXd _vertex;
-    std::array<int, TESTSIZE> _category;
+    const Eigen::MatrixXd _vertex;
+    const std::vector<int> _category;
 };
 
 #endif

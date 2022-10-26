@@ -1,6 +1,7 @@
 #include <iostream>
 
-#include <igl/solid_angle.h>
+#include <igl/marching_tets.h>
+#include <igl/writeOBJ.h>
 #include "Constants.h"
 #include "Meshs.h"
 #include "IO.h"
@@ -22,21 +23,26 @@ inline int calc_category(double x) {
 }
 
 int main(int argc, char const* argv[]) {
-    io::file_path(argc, argv);
+    bool file_path_status = io::file_path(argc, argv);
+    if (!file_path_status) {
+        cout << "Invalid Arguments Count. " << '\n';
+        return 0;
+    }
 
     Eigen::MatrixXd inputV;
     Eigen::MatrixXi inputF;
+    Eigen::MatrixXi inputTet;
 
     // TODO: use argv to readin the input file name
     // BUG: no file reading/writing error check
-    bool input_file_status = io::input(inputV, inputF);
+    bool input_file_status = io::input(inputV, inputF, inputTet);
     if (!input_file_status) {
         cout << "Input File Error. \n";
         return 0;
     }
 
-    auto testV = get_random_points(inputV);
-    // auto testV = inputV;
+    // auto testV = get_random_points(inputV);
+    auto testV = inputV;
 
     bool output_file_status = io::output_test_points(testV);
     if (!output_file_status) {
@@ -44,8 +50,10 @@ int main(int argc, char const* argv[]) {
     }
 
     Meshs meshs(inputV, inputF);
-    std::array<double, TESTSIZE> w{ 0 };
-    std::array<int, TESTSIZE> judge{ 0 };
+    std::vector<double> w (testV.rows());
+    std::vector<int> judge(testV.rows());
+
+    cout << "testV.rows(): " << testV.rows() << '\n';
 
     // Winding Number 
     for (int i = 0; i < testV.rows(); i++) {
@@ -53,8 +61,8 @@ int main(int argc, char const* argv[]) {
         Eigen::Vector3d tmpVec{ {testV(i, 0), testV(i, 1), testV(i, 2)} };
         // Eigen::Vector3d tmpVec{ testV.row(i) };
         w[i] = meshs.calc_winding_value(tmpVec);
-        if (w[i] < -1 - EPS || w[i] > 1 + EPS)
-            cout << i << " " << w[i] << "\n";
+        // if (w[i] < -1 - EPS || w[i] > 1 + EPS)
+        //     cout << i << " " << w[i] << "\n";
         judge[i] = calc_category(w[i]);
     }
     cout << "Calculated Winding Number. \n";
@@ -65,6 +73,20 @@ int main(int argc, char const* argv[]) {
     }
 
     output_file_status = io::output_vtk(testV, judge);
+    if (!output_file_status) {
+        cout << "output_vtk Error. \n"; return 0;
+    }
+
+    Eigen::MatrixXd isoV;
+    Eigen::MatrixXi isoF;
+    Eigen::VectorXd isoValue(w.size());
+    for (auto i = 0; i < w.size(); i++) {
+        isoValue(i) = w[i];
+    }
+
+    igl::marching_tets(inputV, inputTet, isoValue, ISO_VALUE, isoV, isoF);
+    
+    output_file_status = igl::writeOBJ(io::iso_surface_filepath, isoV, isoF);
     if (!output_file_status) {
         cout << "output_vtk Error. \n"; return 0;
     }
