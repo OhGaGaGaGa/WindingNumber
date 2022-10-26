@@ -7,7 +7,7 @@
 #include "Constants.h"
 
 // #define INPUT_FILE_PATH_MANUALLY
-// #define INPUT_VTK
+#define INPUT_VTK
 
 namespace io {
     extern std::string input_filepath, test_point_filepath, winding_value_filepath, output_filepath;

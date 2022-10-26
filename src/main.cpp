@@ -10,7 +10,7 @@ using namespace std;
 Eigen::MatrixXd get_random_points(const Eigen::MatrixXd& V);
 
 inline int calc_category(double x) {
-    assert(-1 - EPS < x && x < 1 + EPS && "winding value invalid. ");
+    // assert(-1 - EPS < x && x < 1 + EPS && "winding value invalid. ");
 
     // Maybe can adjust condition order
     if (x < -1 + EPS) return 1;
@@ -35,14 +35,15 @@ int main(int argc, char const* argv[]) {
         return 0;
     }
 
-    for (int i = 0; i < 16; i++) {
-        cout << inputF(i, 0) << " " << inputF(i, 1) << " " << inputF(i, 2) << "\n";
+    auto testV = get_random_points(inputV);
+    // auto testV = inputV;
+
+    bool output_file_status = io::output_test_points(testV);
+    if (!output_file_status) {
+        cout << "output_test_points Error. \n"; return 0;
     }
 
     Meshs meshs(inputV, inputF);
-
-    auto testV = get_random_points(inputV);
-
     std::array<double, TESTSIZE> w{ 0 };
     std::array<int, TESTSIZE> judge{ 0 };
 
@@ -57,11 +58,6 @@ int main(int argc, char const* argv[]) {
         judge[i] = calc_category(w[i]);
     }
     cout << "Calculated Winding Number. \n";
-
-    bool output_file_status = io::output_test_points(testV);
-    if (!output_file_status) {
-        cout << "output_test_points Error. \n"; return 0;
-    }
 
     output_file_status = io::output_winding_numbers(testV, w, judge);
     if (!output_file_status) {

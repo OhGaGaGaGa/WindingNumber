@@ -8,10 +8,10 @@ namespace io {
 
     void file_path(int argc, char const* argv[]) {
     #ifndef INPUT_FILE_PATH_MANUALLY
-        input_filepath = "../files/tiger-in.obj";
-        test_point_filepath = "../files/tiger-test-out.txt";
-        winding_value_filepath = "../files/tiger-judge-out.txt";
-        output_filepath = "../files/tiger-out.vtk";
+        input_filepath = "../files/sample-in.vtk";
+        test_point_filepath = "../files/sample-test-out.txt";
+        winding_value_filepath = "../files/sample-judge-out.txt";
+        output_filepath = "../files/sample-out.vtk";
     #else
         input_filepath = argv[1];
         test_point_filepath = argv[2];
