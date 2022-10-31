@@ -8,7 +8,10 @@
 
 using namespace std;
 
-Eigen::MatrixXd get_random_points(const Eigen::MatrixXd& V);
+namespace ramdom_point_and_generate_grid {
+    Eigen::MatrixXd get_random_points(const Eigen::MatrixXd& V);
+    void generate_grid(const Eigen::MatrixXd& inputV, Eigen::MatrixXd& gridV, Eigen::MatrixXi& gridCube);
+}
 
 inline int calc_category(double x) {
     // assert(-1 - EPS < x && x < 1 + EPS && "winding value invalid. ");
@@ -41,10 +44,19 @@ int main(int argc, char const* argv[]) {
         return 0;
     }
 
-    // auto testV = get_random_points(inputV);
-    auto testV = inputV;
+    bool output_file_status = igl::writeOBJ(io::output_input_mesh_filepath, inputV, inputF);
+    if (!output_file_status) {
+        cout << "output_input_mesh Error. \n"; return 0;
+    }
 
-    bool output_file_status = io::output_test_points(testV);
+    Eigen::MatrixXd gridV;
+    Eigen::MatrixXi gridCube;
+    ramdom_point_and_generate_grid::generate_grid(inputV, gridV, gridCube);
+
+    // auto testV = ramdom_point_and_generate_grid::get_random_points(inputV);
+    auto testV = gridV;
+
+    output_file_status = io::output_test_points(testV);
     if (!output_file_status) {
         cout << "output_test_points Error. \n"; return 0;
     }
@@ -72,11 +84,20 @@ int main(int argc, char const* argv[]) {
         cout << "output_winding_numbers Error. \n"; return 0;
     }
 
-    output_file_status = io::output_vtk(testV, judge);
+    output_file_status = io::output_mesh_vtk(testV, judge);
     if (!output_file_status) {
-        cout << "output_vtk Error. \n"; return 0;
+        cout << "output_mesh_vtk Error. \n"; return 0;
     }
 
+    output_file_status = io::output_grid_vtk(gridV, gridCube, w);
+    if (!output_file_status) {
+        cout << "output_grid_vtk Error. \n"; return 0;
+    }
+
+    // Manually output iso-surface mesh
+    // only support input VTK
+    
+    /*
     Eigen::MatrixXd isoV;
     Eigen::MatrixXi isoF;
     Eigen::VectorXd isoValue(w.size());
@@ -88,8 +109,8 @@ int main(int argc, char const* argv[]) {
     
     output_file_status = igl::writeOBJ(io::iso_surface_filepath, isoV, isoF);
     if (!output_file_status) {
-        cout << "output_vtk Error. \n"; return 0;
+        cout << "output_iso_surface Error. \n"; return 0;
     }
-    
+    */
     return 0;
 }
