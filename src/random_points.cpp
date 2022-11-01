@@ -21,32 +21,14 @@ namespace ramdom_point_and_generate_grid {
         return ret;
     }
 
-    double min0 = INT_MAX, max0 = INT_MIN;
-    double min1 = INT_MAX, max1 = INT_MIN;
-    double min2 = INT_MAX, max2 = INT_MIN;
-
-    void find_min_max(const Eigen::MatrixXd& V) {
-        min0 = V.col(0).minCoeff();
-        max0 = V.col(0).maxCoeff();
-        min1 = V.col(1).minCoeff();
-        max1 = V.col(1).maxCoeff();
-        min2 = V.col(2).minCoeff();
-        max2 = V.col(2).maxCoeff();
-
-        // TODO: highly redundant code
-        // for (int i = 0; i < V.rows(); i++) {
-        //     min0 = std::min(min0, V(i, 0));
-        //     max0 = std::max(max0, V(i, 0));
-        //     min1 = std::min(min1, V(i, 1));
-        //     max1 = std::max(max1, V(i, 1));
-        //     min2 = std::min(min2, V(i, 2));
-        //     max2 = std::max(max2, V(i, 2));
-        // }
-    }
-
     Eigen::MatrixXd get_random_points(const Eigen::MatrixXd& V) {
         srand(time(nullptr));
-        find_min_max(V);
+        double min0 = V.col(0).minCoeff();
+        double max0 = V.col(0).maxCoeff();
+        double min1 = V.col(1).minCoeff();
+        double max1 = V.col(1).maxCoeff();
+        double min2 = V.col(2).minCoeff();
+        double max2 = V.col(2).maxCoeff();
 
         return random_points(TESTSIZE,
             min0 - PADDING, max0 + PADDING,
@@ -60,8 +42,12 @@ namespace ramdom_point_and_generate_grid {
     }
 
     void generate_grid(const Eigen::MatrixXd& inputV, Eigen::MatrixXd& gridV, Eigen::MatrixXi& gridCube) {
-        find_min_max(inputV);
-        // +- padding
+        double min0 = inputV.col(0).minCoeff() - PADDING;
+        double max0 = inputV.col(0).maxCoeff() + PADDING;
+        double min1 = inputV.col(1).minCoeff() - PADDING;
+        double max1 = inputV.col(1).maxCoeff() + PADDING;
+        double min2 = inputV.col(2).minCoeff() - PADDING;
+        double max2 = inputV.col(2).maxCoeff() + PADDING;
 
         gridV.resize((DIVI_X + 1) * (DIVI_Y + 1) * (DIVI_Z + 1), 3);
         for (int i = 0; i <= DIVI_X; i++) {
