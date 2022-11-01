@@ -49,21 +49,31 @@ void Meshs::init_aabb_tree() {
 }
 
 void Meshs::init_octree(OcTreeNode* node) {
+    if (!node) return;
     double sum_aera = 0;
     if (node->_child[0]) {
-        for (auto ch : node->_child) {
+        for (auto& ch : node->_child) {
             init_octree(ch);
         }
-        for (auto ch : node->_child) {
-            node->normal += ch->aera * ch->normal;
-            node->center += ch->aera * ch->center;
-            sum_aera += ch->aera; 
+        for (auto& ch : node->_child) {
+            if (-EPS < ch->aera && ch->aera < EPS) 
+                ch = nullptr;
+            else {
+                node->normal += ch->aera * ch->normal;
+                node->center += ch->aera * ch->center;
+                sum_aera += ch->aera; 
+            }
         }
     }
     for (auto mesh_id : node->face) {
         node->normal += _aera(mesh_id) * _face_normal.row(mesh_id);
         node->center += _aera(mesh_id) * get_center(_mesh.row(mesh_id));
         sum_aera += _aera(mesh_id);
+    }
+    std::cout << "sum_aera = " << sum_aera << "\n";
+    if (-EPS < sum_aera && sum_aera < EPS) {
+        node->aera = 0;
+        return;
     }
     node->center /= sum_aera;
     node->aera = node->normal.norm() / 2;

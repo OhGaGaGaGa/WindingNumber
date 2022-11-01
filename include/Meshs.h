@@ -86,11 +86,17 @@ private:
         for (auto i = 0; i < _mesh.rows(); i++)
             _face_normal.row(i).normalize();
         assert(_face_normal.row(0).norm() == 1 && "Norm Fail! ");
-        _aera.resize(_mesh.rows());
         for (auto i = 0; i < _mesh.rows(); i++)
+            std::cout << "Normal " << i << ": " << _face_normal(i, 0) << ", " << _face_normal(i, 1) << ", " << _face_normal(i, 2) << "\n";
+        std::cout << "\n";
+        _aera.resize(_mesh.rows());
+        for (auto i = 0; i < _mesh.rows(); i++) {
             _aera(i) = calc_aera(_mesh.row(i));
+            std::cout << "Aera " << i << ": " << _aera(i) << " ";
+        }
+        std::cout << "\n\n";
         for (auto i = 0; i < _mesh.rows(); i++) 
-            insert(_root, i);
+             insert(_root, i);
         init_octree(_root);
     }
 
