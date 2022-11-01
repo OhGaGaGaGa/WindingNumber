@@ -86,7 +86,7 @@ private:
         for (auto i = 0; i < _mesh.rows(); i++)
             _face_normal.row(i).normalize();
         assert(_face_normal.row(0).norm() == 1 && "Norm Fail! ");
-        _aera.resize(_mesh.rows(), 3);
+        _aera.resize(_mesh.rows());
         for (auto i = 0; i < _mesh.rows(); i++)
             _aera(i) = calc_aera(_mesh.row(i));
         for (auto i = 0; i < _mesh.rows(); i++) 
@@ -105,7 +105,7 @@ private:
         auto b = _vertex.row(triangle(1));
         auto c = _vertex.row(triangle(2));
 
-        Eigen::VectorXd ab = b - a, ac = c - a, normal;
+        Eigen::RowVector3d ab = b - a, ac = c - a, normal;
         igl::cross(ab, ac, normal);
         return normal.norm() / 2;
     }

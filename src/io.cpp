@@ -53,13 +53,13 @@ namespace io {
         }
 // #ifndef INPUT_FILE_PATH_MANUALLY
         if (argc == 1) {
-            input_filepath = "../files/tiger-in.obj";
-            output_input_mesh_filepath = "../files/tiger-input-mesh.obj";
-            test_point_filepath = "../files/tiger-test-out.txt";
-            winding_value_filepath = "../files/tiger-judge-out.txt";
-            random_points_filepath = "../files/tiger-points-out.vtk";
-            grid_filepath = "../files/tiger-grid-out.vtk";
-            iso_surface_filepath = "../files/tiger-isosurface-out.obj";
+            input_filepath = "../files/cube-in.obj";
+            output_input_mesh_filepath = "../files/cube-input-mesh.obj";
+            test_point_filepath = "../files/cube-test-out.txt";
+            winding_value_filepath = "../files/cube-judge-out.txt";
+            random_points_filepath = "../files/cube-points-out.vtk";
+            grid_filepath = "../files/cube-grid-out.vtk";
+            iso_surface_filepath = "../files/cube-isosurface-out.obj";
         }
 // #else
         else {
