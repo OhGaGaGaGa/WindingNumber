@@ -6,7 +6,6 @@
 #include <igl/per_face_normals.h>
 #include <igl/cross.h>
 #include <cmath>
-#include "Constants.h"
 
 struct OcTreeNode {
     std::array<double, 3> _min_axis;
@@ -28,14 +27,14 @@ struct OcTreeNode {
                 _max_dis = std::max(_max_dis, max_axis[i] - min_axis[i]);
             for (int i = 0; i < 3; i++) 
                 second_term_mat.row(i) = (Eigen::Vector3d){0, 0, 0};
-            if (depth < OCTREE_MAX_DEPTH)
-                generate_child();
+            // if (depth < OCTREE_MAX_DEPTH)
+            //     generate_child();
     }
 
-    bool inside(const Eigen::Vector3d& axis);
+    bool point_inside(const Eigen::Vector3d& axis);
     double winding_number(const Eigen::Vector3d& q);
     void generate_child();
-    
+    void delete_empty_child();    
 };
 
 class Meshs {
@@ -77,11 +76,12 @@ private:
             _aera(i) = calc_aera(_mesh.row(i));
         }
         for (auto i = 0; i < _mesh.rows(); i++) 
-             insert(_root, i);
+            _root->face.push_back(i);
         init_octree(_root);
+        spread(_root);
     }
 
-    bool insert(OcTreeNode* node, int mesh_id);
+    void spread(OcTreeNode* node);
     void init_aabb_tree();
     void init_octree(OcTreeNode* node);
     double calc_solid_angle(int mesh_id, const Eigen::Vector3d& p);

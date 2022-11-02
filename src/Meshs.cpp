@@ -2,7 +2,7 @@
 #include "Constants.h"
 #include <iostream>
 
-bool OcTreeNode::inside(const Eigen::Vector3d& axis) {
+bool OcTreeNode::point_inside(const Eigen::Vector3d& axis) {
     bool ret = true;
     for (int i = 0; i < 3; i++) {
         if (axis[i] < _min_axis[i] - EPS || _max_axis[i] + EPS < axis[i])
@@ -46,6 +46,8 @@ void OcTreeNode::generate_child() {
 
     child_count = 8;
 }
+
+void OcTreeNode::delete_empty_child() {}
 
 double Meshs::calc_solid_angle(int mesh_id, const Eigen::Vector3d& p) {
     double solid_angle = igl::solid_angle(_vertex.row(_mesh(mesh_id, 0)), _vertex.row(_mesh(mesh_id, 1)), _vertex.row(_mesh(mesh_id, 2)), p);
@@ -138,28 +140,32 @@ void Meshs::init_octree(OcTreeNode* node) {
     }
 }
 
-bool Meshs::insert(OcTreeNode* node, int mesh_id) {
-    Eigen::Vector3i triangle = _mesh.row(mesh_id);
-    int in = -1;
-    if (node->child_count) {
+void Meshs::spread(OcTreeNode* node) {
+    if (node->face.size() <= 2)
+        return;
+    node->generate_child();
+    auto vec = node->face;
+    node->face.clear();
+    for (auto mesh_id : vec) {
+        Eigen::Vector3i triangle = _mesh.row(mesh_id);
+        int in = -1;
         for (auto i = 0; i < 8; i++) {
             auto& ch = node->_child[i];
-            if (!ch) continue;
             bool inside = true;
             for (auto vid : triangle) {
-                if (!ch->inside(_vertex.row(vid)))
+                if (!ch->point_inside(_vertex.row(vid)))
                     inside = false;
             }
             if (inside) {
                 in = i;
-                insert(ch, mesh_id);
+                ch->face.push_back(mesh_id);
             }
         }
         if (in == -1)
             node->face.push_back(mesh_id);
     }
-    else 
-        node->face.push_back(mesh_id);
-
-    return true;
+    for (auto& ch : node->_child) {
+        spread(ch);
+    }
+    node->delete_empty_child();
 }
