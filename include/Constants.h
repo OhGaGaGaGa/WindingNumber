@@ -5,6 +5,6 @@ const double PADDING = 0.1;
 const int TESTSIZE = 200;
 const double EPS = 1e-5;
 const double ISO_VALUE = -0.2;
-const long DiviX = 50, DiviY = 50, DiviZ = 50;
+const long DiviX = 20, DiviY = 20, DiviZ = 20;
 
 #endif
