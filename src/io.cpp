@@ -56,7 +56,7 @@ namespace io {
             input_filepath = "../files/tiger-in.obj";
             output_input_mesh_filepath = "../files/tiger-input-mesh.obj";
             test_point_filepath = "../files/tiger-test-out.txt";
-            winding_value_filepath = "../files/tiger-judge-out.txt";
+            winding_value_filepath = "../files/tiger-winding-number-out.txt";
             random_points_filepath = "../files/tiger-points-out.vtk";
             grid_filepath = "../files/tiger-grid-out.vtk";
             iso_surface_filepath = "../files/tiger-isosurface-out.obj";

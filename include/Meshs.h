@@ -5,6 +5,7 @@
 #include <igl/AABB.h>
 #include <igl/per_face_normals.h>
 #include <igl/cross.h>
+#include <math.h>
 #include "Constants.h"
 
 struct OcTreeNode {
@@ -18,12 +19,18 @@ struct OcTreeNode {
 
     Eigen::Vector3d center {0, 0, 0};
     Eigen::Vector3d normal {0, 0, 0};
-    double aera{};
+    double aera{0};
+    Eigen::Matrix3d corner;
+    Eigen::Matrix3d second_term_mat;
 
     OcTreeNode(std::array<double, 3> min_axis, std::array<double, 3> max_axis, int depth) : 
         _min_axis(min_axis), _max_axis(max_axis), _child {nullptr}, face{}, _depth(depth) {
             for (int i = 0; i < 3; i++)
                 _max_dis = std::max(_max_dis, max_axis[i] - min_axis[i]);
+            for (int i = 0; i < 3; i++) {
+                corner.row(i) = (Eigen::Vector3d){0, 0, 0};
+                second_term_mat.row(i) = (Eigen::Vector3d){0, 0, 0};
+            }
             if (depth < OCTREE_MAX_DEPTH) {
                 std::array<double, 3> mid_axis {(min_axis[0] + max_axis[0]) / 2, (min_axis[1] + max_axis[1]) / 2, (min_axis[2] + max_axis[2]) / 2};
                 _child[0] = new OcTreeNode({min_axis[0], min_axis[1], min_axis[2]}, {mid_axis[0], mid_axis[1], mid_axis[2]}, depth + 1);
@@ -52,7 +59,18 @@ struct OcTreeNode {
     double winding_number(const Eigen::Vector3d& q) {
         auto a = normal;
         auto b = center - q;
-        return (a(0) * b(0) + a(1) * b(1) + a(2) * b(2)) / pow(b.norm(), 3);
+        auto first_term = (a(0) * b(0) + a(1) * b(1) + a(2) * b(2)) / pow(b.norm(), 3);
+
+        Eigen::Matrix3d Hesse;
+        Hesse << b.squaredNorm()-3*b(0)*b(0), -3 * b(0) * b(1),            -3 * b(0) * b(2), 
+                 -3 * b(1) * b(0),            b.squaredNorm()-3*b(1)*b(1), -3 * b(1) * b(2),
+                 -3 * b(2) * b(0),            -3 * b(2) * b(1),             b.squaredNorm()-3*b(2)*b(2);
+        Hesse /= b.squaredNorm() * b.squaredNorm() * b.norm();
+        double second_term = 0;
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                second_term += second_term_mat(i, j) * Hesse(i, j);
+        return first_term + second_term;
     }
 };
 
@@ -109,21 +127,25 @@ private:
     double calc_solid_angle(int mesh_id, const Eigen::Vector3d& p);
     double calc_winding_number(const Eigen::Vector3d& q, OcTreeNode* node);
 
-    inline double calc_aera(const Eigen::Vector3i& triangle) {
-        auto a = _vertex.row(triangle(0));
-        auto b = _vertex.row(triangle(1));
-        auto c = _vertex.row(triangle(2));
+    inline double calc_aera(const Eigen::Vector3i& mesh_row) {
+        auto a = _vertex.row(mesh_row(0));
+        auto b = _vertex.row(mesh_row(1));
+        auto c = _vertex.row(mesh_row(2));
 
         Eigen::RowVector3d ab = b - a, ac = c - a, normal;
         igl::cross(ab, ac, normal);
         return normal.norm() / 2;
     }
-    inline Eigen::Vector3d get_center(const Eigen::Vector3i& triangle) {
-        auto a = _vertex.row(triangle(0));
-        auto b = _vertex.row(triangle(1));
-        auto c = _vertex.row(triangle(2));
+    inline Eigen::Vector3d get_center(const Eigen::Vector3i& mesh_row) {
+        auto a = _vertex.row(mesh_row(0));
+        auto b = _vertex.row(mesh_row(1));
+        auto c = _vertex.row(mesh_row(2));
 
         return (a + b + c) / 3;
+    }
+    inline Eigen::Matrix3d outer(const Eigen::Vector3d& a, Eigen::Vector3d b) {
+        assert(a.rows() == 3 && b.rows() == 3 && "Only Support Column Vector. ");
+        return a * b.transpose();
     }
 };
 

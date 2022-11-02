@@ -66,6 +66,10 @@ void Meshs::init_octree(OcTreeNode* node) {
                 node->normal += ch->aera * ch->normal;
                 node->center += ch->aera * ch->center;
                 sum_aera += ch->aera; 
+
+                node->corner.row(0) += ch->aera * ch->corner.row(0);
+                node->corner.row(1) += ch->aera * ch->corner.row(1);
+                node->corner.row(2) += ch->aera * ch->corner.row(2);
             }
         }
     }
@@ -73,6 +77,10 @@ void Meshs::init_octree(OcTreeNode* node) {
         node->normal += _aera(mesh_id) * _face_normal.row(mesh_id);
         node->center += _aera(mesh_id) * get_center(_mesh.row(mesh_id));
         sum_aera += _aera(mesh_id);
+
+        node->corner.row(0) += _aera(mesh_id) * _vertex.row(_mesh(mesh_id, 0));
+        node->corner.row(1) += _aera(mesh_id) * _vertex.row(_mesh(mesh_id, 1));
+        node->corner.row(2) += _aera(mesh_id) * _vertex.row(_mesh(mesh_id, 2));
     }
     if (-EPS < sum_aera && sum_aera < EPS) {
         node->aera = 0;
@@ -90,8 +98,24 @@ void Meshs::init_octree(OcTreeNode* node) {
     //     std::cout << "\n";
     // }
     node->center /= sum_aera;
+    node->corner.row(0) /= sum_aera;
+    node->corner.row(1) /= sum_aera;
+    node->corner.row(2) /= sum_aera;
+
     node->aera = node->normal.norm() / 2;
     node->normal.normalize();
+
+    for (auto& ch : node->_child) {
+        if (!ch) continue;
+        auto a = (ch->corner.row(0) + ch->corner.row(1) + ch->corner.row(2)).transpose() / 3 + ch->center;
+        auto b = ch->normal;
+        node->second_term_mat += ch->aera * outer(a, b);
+    }
+    for (auto mesh_id : node->face) {
+        auto a = (_vertex.row(_mesh(mesh_id, 0)) + _vertex.row(_mesh(mesh_id, 1)) + _vertex.row(_mesh(mesh_id, 2))).transpose() / 3 + get_center(_mesh.row(mesh_id));
+        auto b = _face_normal.row(mesh_id);
+        node->second_term_mat += _aera(mesh_id) * outer(a, b);
+    }
 }
 
 bool Meshs::insert(OcTreeNode* node, int mesh_id) {
