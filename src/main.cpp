@@ -72,7 +72,7 @@ int main(int argc, char const* argv[]) {
         // TODO: w[i] = meshs.calc_winding_value(testV.row(i));
         Eigen::Vector3d tmpVec{ {testV(i, 0), testV(i, 1), testV(i, 2)} };
         // Eigen::Vector3d tmpVec{ testV.row(i) };
-        w[i] = meshs.calc_winding_value(tmpVec);
+        w[i] = meshs.calc_winding_value_using_octree(tmpVec);
         // if (w[i] < -1 - EPS || w[i] > 1 + EPS)
         //     cout << i << " " << w[i] << "\n";
         judge[i] = calc_category(w[i]);
