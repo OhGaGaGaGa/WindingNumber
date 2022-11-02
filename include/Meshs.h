@@ -49,7 +49,7 @@ struct OcTreeNode {
 
     bool inside(const Eigen::Vector3d& axis) {
         bool ret = true;
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 3; i++) {
             if (axis[i] < _min_axis[i] - EPS || _max_axis[i] + EPS < axis[i])
                 ret = false;
         }
@@ -70,7 +70,9 @@ struct OcTreeNode {
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
                 second_term += second_term_mat(i, j) * Hesse(i, j);
-        return first_term + second_term;
+        // std::cout << first_term << " " << second_term << "\n";
+        // return first_term + second_term;
+        return first_term;
     }
 };
 
@@ -107,15 +109,10 @@ private:
         for (auto i = 0; i < _mesh.rows(); i++)
             _face_normal.row(i).normalize();
         assert(_face_normal.row(0).norm() == 1 && "Norm Fail! ");
-        // for (auto i = 0; i < _mesh.rows(); i++)
-        //     std::cout << "Normal " << i << ": " << _face_normal(i, 0) << ", " << _face_normal(i, 1) << ", " << _face_normal(i, 2) << "\n";
-        // std::cout << "\n";
         _aera.resize(_mesh.rows());
         for (auto i = 0; i < _mesh.rows(); i++) {
             _aera(i) = calc_aera(_mesh.row(i));
-            // std::cout << "Aera " << i << ": " << _aera(i) << " ";
         }
-        // std::cout << "\n\n";
         for (auto i = 0; i < _mesh.rows(); i++) 
              insert(_root, i);
         init_octree(_root);

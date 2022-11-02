@@ -26,14 +26,10 @@ double Meshs::calc_winding_number(const Eigen::Vector3d& q, OcTreeNode* node) {
         return node->winding_number(q);
     else {
         double val = 0;
-        if (!node->child_count) {
-            for (auto mesh_id : node->face) 
+        for (auto ch : node->_child)
+            if (ch) val += calc_winding_number(q, ch);
+        for (auto mesh_id : node->face) 
                 val += calc_solid_angle(mesh_id, q);
-        }
-        else {
-            for (auto ch : node->_child)
-                if (ch) val += calc_winding_number(q, ch);
-        }
         return val;
     }
 }
@@ -103,16 +99,18 @@ void Meshs::init_octree(OcTreeNode* node) {
     node->corner.row(2) /= sum_aera;
 
     node->aera = node->normal.norm() / 2;
+    std::cout << node->aera << " " << (node->corner.row(1) - node->corner.row(0)).cross(node->corner.row(2) - node->corner.row(0)).norm() / 2 << "\n";
+    // Distinct Too Large
     node->normal.normalize();
 
     for (auto& ch : node->_child) {
         if (!ch) continue;
-        auto a = (ch->corner.row(0) + ch->corner.row(1) + ch->corner.row(2)).transpose() / 3 + ch->center;
+        auto a = (ch->corner.row(0) + ch->corner.row(1) + ch->corner.row(2)).transpose() / 3 - ch->center;
         auto b = ch->normal;
         node->second_term_mat += ch->aera * outer(a, b);
     }
     for (auto mesh_id : node->face) {
-        auto a = (_vertex.row(_mesh(mesh_id, 0)) + _vertex.row(_mesh(mesh_id, 1)) + _vertex.row(_mesh(mesh_id, 2))).transpose() / 3 + get_center(_mesh.row(mesh_id));
+        auto a = (_vertex.row(_mesh(mesh_id, 0)) + _vertex.row(_mesh(mesh_id, 1)) + _vertex.row(_mesh(mesh_id, 2))).transpose() / 3 - get_center(_mesh.row(mesh_id));
         auto b = _face_normal.row(mesh_id);
         node->second_term_mat += _aera(mesh_id) * outer(a, b);
     }
