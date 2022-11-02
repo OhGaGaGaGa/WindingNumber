@@ -2,6 +2,51 @@
 #include "Constants.h"
 #include <iostream>
 
+bool OcTreeNode::inside(const Eigen::Vector3d& axis) {
+    bool ret = true;
+    for (int i = 0; i < 3; i++) {
+        if (axis[i] < _min_axis[i] - EPS || _max_axis[i] + EPS < axis[i])
+            ret = false;
+    }
+    return ret;
+}
+
+double OcTreeNode::winding_number(const Eigen::Vector3d& q) {
+    auto a = normal;
+    auto b = center - q;
+    auto first_term = (a(0) * b(0) + a(1) * b(1) + a(2) * b(2)) / pow(b.norm(), 3);
+
+    Eigen::Matrix3d Hesse;
+    Hesse << b.squaredNorm()-3*b(0)*b(0), -3 * b(0) * b(1),            -3 * b(0) * b(2), 
+                -3 * b(1) * b(0),            b.squaredNorm()-3*b(1)*b(1), -3 * b(1) * b(2),
+                -3 * b(2) * b(0),            -3 * b(2) * b(1),             b.squaredNorm()-3*b(2)*b(2);
+    Hesse /= b.squaredNorm() * b.squaredNorm() * b.norm();
+    double second_term = 0;
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            second_term += second_term_mat(i, j) * Hesse(i, j);
+    if (first_term > EPS && abs(first_term) > abs(second_term) || first_term < -EPS && abs(first_term) > abs(second_term))
+        return first_term + second_term;
+    return first_term;
+}
+
+void OcTreeNode::generate_child() {
+    std::array<double, 3> mid {(_min_axis[0] + _max_axis[0]) / 2, (_min_axis[1] + _max_axis[1]) / 2, (_min_axis[2] + _max_axis[2]) / 2};
+    auto& min = _min_axis;
+    auto& max = _max_axis;
+    _child[0] = new OcTreeNode({min[0], min[1], min[2]}, {mid[0], mid[1], mid[2]}, _depth + 1);
+    _child[1] = new OcTreeNode({mid[0], min[1], min[2]}, {max[0], mid[1], mid[2]}, _depth + 1);
+    _child[2] = new OcTreeNode({mid[0], mid[1], min[2]}, {max[0], max[1], mid[2]}, _depth + 1);
+    _child[3] = new OcTreeNode({min[0], mid[1], min[2]}, {mid[0], max[1], mid[2]}, _depth + 1);
+
+    _child[4] = new OcTreeNode({min[0], min[1], mid[2]}, {mid[0], mid[1], max[2]}, _depth + 1);
+    _child[5] = new OcTreeNode({mid[0], min[1], mid[2]}, {max[0], mid[1], max[2]}, _depth + 1);
+    _child[6] = new OcTreeNode({mid[0], mid[1], mid[2]}, {max[0], max[1], max[2]}, _depth + 1);
+    _child[7] = new OcTreeNode({min[0], mid[1], mid[2]}, {mid[0], max[1], max[2]}, _depth + 1);
+
+    child_count = 8;
+}
+
 double Meshs::calc_solid_angle(int mesh_id, const Eigen::Vector3d& p) {
     double solid_angle = igl::solid_angle(_vertex.row(_mesh(mesh_id, 0)), _vertex.row(_mesh(mesh_id, 1)), _vertex.row(_mesh(mesh_id, 2)), p);
     if (solid_angle > -0.5 - EPS && solid_angle < -0.5 + EPS || solid_angle > 0.5 - EPS && solid_angle < 0.5 + EPS)
