@@ -20,7 +20,6 @@ struct OcTreeNode {
     Eigen::Vector3d center {0, 0, 0};
     Eigen::Vector3d normal {0, 0, 0};
     double aera{0};
-    Eigen::Matrix3d corner;
     Eigen::Matrix3d second_term_mat;
 
     OcTreeNode(std::array<double, 3> min_axis, std::array<double, 3> max_axis, int depth) : 
@@ -28,7 +27,6 @@ struct OcTreeNode {
             for (int i = 0; i < 3; i++)
                 _max_dis = std::max(_max_dis, max_axis[i] - min_axis[i]);
             for (int i = 0; i < 3; i++) {
-                corner.row(i) = (Eigen::Vector3d){0, 0, 0};
                 second_term_mat.row(i) = (Eigen::Vector3d){0, 0, 0};
             }
             if (depth < OCTREE_MAX_DEPTH) {
@@ -70,8 +68,8 @@ struct OcTreeNode {
         for (int i = 0; i < 3; i++)
             for (int j = 0; j < 3; j++)
                 second_term += second_term_mat(i, j) * Hesse(i, j);
-        // std::cout << first_term << " " << second_term << "\n";
-        // return first_term + second_term;
+        if (first_term > EPS && abs(first_term) > abs(second_term) || first_term < -EPS && abs(first_term) > abs(second_term))
+            return first_term + second_term;
         return first_term;
     }
 };
