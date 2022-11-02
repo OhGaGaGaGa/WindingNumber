@@ -101,6 +101,7 @@ void Meshs::init_octree(OcTreeNode* node) {
         }
         for (auto& ch : node->_child) {
             if (-EPS < ch->aera && ch->aera < EPS) {
+                delete ch;
                 ch = nullptr; node->child_count--;
             }
             else {
