@@ -18,8 +18,8 @@ double OcTreeNode::winding_number(const Eigen::Vector3d& q) {
 
     Eigen::Matrix3d Hesse;
     Hesse << b.squaredNorm()-3*b(0)*b(0), -3 * b(0) * b(1),            -3 * b(0) * b(2), 
-                -3 * b(1) * b(0),            b.squaredNorm()-3*b(1)*b(1), -3 * b(1) * b(2),
-                -3 * b(2) * b(0),            -3 * b(2) * b(1),             b.squaredNorm()-3*b(2)*b(2);
+             -3 * b(1) * b(0),            b.squaredNorm()-3*b(1)*b(1), -3 * b(1) * b(2),
+             -3 * b(2) * b(0),            -3 * b(2) * b(1),             b.squaredNorm()-3*b(2)*b(2);
     Hesse /= b.squaredNorm() * b.squaredNorm() * b.norm();
     double second_term = 0;
     for (int i = 0; i < 3; i++)
