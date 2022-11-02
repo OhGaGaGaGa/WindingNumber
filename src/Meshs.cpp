@@ -21,17 +21,18 @@ double Meshs::calc_winding_value_using_octree(const Eigen::Vector3d& p) {
 }
 
 double Meshs::calc_winding_number(const Eigen::Vector3d& q, OcTreeNode* node) {
+    assert(node && "node cannot be nullptr");
     if ((q - node->center).norm() > ACCURACY * node->_max_dis)
         return node->winding_number(q);
     else {
         double val = 0;
-        if (!node->_child[0]) {
+        if (!node->child_count) {
             for (auto mesh_id : node->face) 
                 val += calc_solid_angle(mesh_id, q);
         }
         else {
             for (auto ch : node->_child)
-                val += calc_winding_number(q, ch);
+                if (ch) val += calc_winding_number(q, ch);
         }
         return val;
     }
@@ -51,13 +52,16 @@ void Meshs::init_aabb_tree() {
 void Meshs::init_octree(OcTreeNode* node) {
     if (!node) return;
     double sum_aera = 0;
-    if (node->_child[0]) {
+    assert(node->normal.norm() == 0 && "Length of normal should be 0. ");
+    assert(node->center.norm() == 0 && "Center should be (0, 0, 0). ");
+    if (node->child_count) {
         for (auto& ch : node->_child) {
             init_octree(ch);
         }
         for (auto& ch : node->_child) {
-            if (-EPS < ch->aera && ch->aera < EPS) 
-                ch = nullptr;
+            if (-EPS < ch->aera && ch->aera < EPS) {
+                ch = nullptr; node->child_count--;
+            }
             else {
                 node->normal += ch->aera * ch->normal;
                 node->center += ch->aera * ch->center;
@@ -70,21 +74,33 @@ void Meshs::init_octree(OcTreeNode* node) {
         node->center += _aera(mesh_id) * get_center(_mesh.row(mesh_id));
         sum_aera += _aera(mesh_id);
     }
-    std::cout << "sum_aera = " << sum_aera << "\n";
     if (-EPS < sum_aera && sum_aera < EPS) {
         node->aera = 0;
         return;
     }
+    // if (sum_aera > 1e20) {
+    //     std::cout << "sum_aera = " << sum_aera << "\n";
+    //     for (auto mesh_id : node->face)
+    //         std::cout << "Mesh_id: " << mesh_id << ", Aera: " << _aera[mesh_id] << "\n";
+    //     for (auto& ch : node->_child) {
+    //         if (ch) {
+    //             std::cout << "child: " << ch << ", child aera: " << ch->aera << "\n";
+    //         }
+    //     }
+    //     std::cout << "\n";
+    // }
     node->center /= sum_aera;
     node->aera = node->normal.norm() / 2;
+    node->normal.normalize();
 }
 
 bool Meshs::insert(OcTreeNode* node, int mesh_id) {
     Eigen::Vector3i triangle = _mesh.row(mesh_id);
     int in = -1;
-    if (node->_child[0]) {
+    if (node->child_count) {
         for (auto i = 0; i < 8; i++) {
             auto& ch = node->_child[i];
+            if (!ch) continue;
             bool inside = true;
             for (auto vid : triangle) {
                 if (!ch->inside(_vertex.row(vid)))

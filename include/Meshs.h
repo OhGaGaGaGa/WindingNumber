@@ -12,15 +12,16 @@ struct OcTreeNode {
     std::array<double, 3> _max_axis;
     std::array<OcTreeNode*, 8> _child;
     std::vector<int> face;
+    int child_count{0};
     int _depth;
-    double _max_dis {0};
+    double _max_dis{0};
 
-    Eigen::Vector3d center;
-    Eigen::Vector3d normal;
+    Eigen::Vector3d center {0, 0, 0};
+    Eigen::Vector3d normal {0, 0, 0};
     double aera{};
 
     OcTreeNode(std::array<double, 3> min_axis, std::array<double, 3> max_axis, int depth) : 
-        _min_axis(min_axis), _max_axis(max_axis),  _depth(depth), _child {nullptr} {
+        _min_axis(min_axis), _max_axis(max_axis), _child {nullptr}, face{}, _depth(depth) {
             for (int i = 0; i < 3; i++)
                 _max_dis = std::max(_max_dis, max_axis[i] - min_axis[i]);
             if (depth < OCTREE_MAX_DEPTH) {
@@ -34,6 +35,8 @@ struct OcTreeNode {
                 _child[5] = new OcTreeNode({mid_axis[0], min_axis[1], mid_axis[2]}, {max_axis[0], mid_axis[1], max_axis[2]}, depth + 1);
                 _child[6] = new OcTreeNode({mid_axis[0], mid_axis[1], mid_axis[2]}, {max_axis[0], max_axis[1], max_axis[2]}, depth + 1);
                 _child[7] = new OcTreeNode({min_axis[0], mid_axis[1], mid_axis[2]}, {mid_axis[0], max_axis[1], max_axis[2]}, depth + 1);
+
+                child_count = 8;
             }
     }
 
@@ -86,15 +89,15 @@ private:
         for (auto i = 0; i < _mesh.rows(); i++)
             _face_normal.row(i).normalize();
         assert(_face_normal.row(0).norm() == 1 && "Norm Fail! ");
-        for (auto i = 0; i < _mesh.rows(); i++)
-            std::cout << "Normal " << i << ": " << _face_normal(i, 0) << ", " << _face_normal(i, 1) << ", " << _face_normal(i, 2) << "\n";
-        std::cout << "\n";
+        // for (auto i = 0; i < _mesh.rows(); i++)
+        //     std::cout << "Normal " << i << ": " << _face_normal(i, 0) << ", " << _face_normal(i, 1) << ", " << _face_normal(i, 2) << "\n";
+        // std::cout << "\n";
         _aera.resize(_mesh.rows());
         for (auto i = 0; i < _mesh.rows(); i++) {
             _aera(i) = calc_aera(_mesh.row(i));
-            std::cout << "Aera " << i << ": " << _aera(i) << " ";
+            // std::cout << "Aera " << i << ": " << _aera(i) << " ";
         }
-        std::cout << "\n\n";
+        // std::cout << "\n\n";
         for (auto i = 0; i < _mesh.rows(); i++) 
              insert(_root, i);
         init_octree(_root);
