@@ -5,7 +5,7 @@
 #include <igl/AABB.h>
 #include <igl/per_face_normals.h>
 #include <igl/cross.h>
-#include <math.h>
+#include <cmath>
 #include "Constants.h"
 
 struct OcTreeNode {
