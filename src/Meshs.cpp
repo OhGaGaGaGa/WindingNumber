@@ -72,6 +72,8 @@ double Meshs::calc_winding_number(const Eigen::Vector3d& q, OcTreeNode* node) {
     if ((q - node->center).norm() > ACCURACY * node->_max_dis)
         return node->winding_number(q);
     else {
+        if (node->_depth > 6) 
+            std::cout << node->_depth << " ";
         double val = 0;
         for (auto ch : node->_child)
             if (ch) val += calc_winding_number(q, ch);
@@ -92,14 +94,44 @@ void Meshs::init_aabb_tree() {
     tree.squared_distance(_vertex, _mesh, P, sqrD, I, C);
 }
 
-void Meshs::init_octree(OcTreeNode* node) {
+void Meshs::spread(OcTreeNode* node) {
+    if (node->face.size() <= 2)
+        return;
+    node->generate_child();
+    auto vec = node->face;
+    node->face.clear();
+    for (auto mesh_id : vec) {
+        Eigen::Vector3i triangle = _mesh.row(mesh_id);
+        int in = -1;
+        for (auto i = 0; i < 8; i++) {
+            auto& ch = node->_child[i];
+            bool inside = true;
+            for (auto vid : triangle) {
+                if (!ch->point_inside(_vertex.row(vid)))
+                    inside = false;
+            }
+            if (inside) {
+                in = i;
+                ch->face.push_back(mesh_id);
+            }
+        }
+        if (in == -1)
+            node->face.push_back(mesh_id);
+    }
+    for (auto& ch : node->_child) {
+        spread(ch);
+    }
+    node->delete_empty_child();
+}
+
+void Meshs::init_value(OcTreeNode* node) {
     if (!node) return;
     double sum_aera = 0;
     assert(node->normal.norm() == 0 && "Length of normal should be 0. ");
     assert(node->center.norm() == 0 && "Center should be (0, 0, 0). ");
     if (node->child_count) {
         for (auto& ch : node->_child) {
-            init_octree(ch);
+            init_value(ch);
         }
         for (auto& ch : node->_child) {
             if (-EPS < ch->aera && ch->aera < EPS) {
@@ -138,34 +170,4 @@ void Meshs::init_octree(OcTreeNode* node) {
         auto b = _face_normal.row(mesh_id);
         node->second_term_mat += _aera(mesh_id) * outer(a, b);
     }
-}
-
-void Meshs::spread(OcTreeNode* node) {
-    if (node->face.size() <= 2)
-        return;
-    node->generate_child();
-    auto vec = node->face;
-    node->face.clear();
-    for (auto mesh_id : vec) {
-        Eigen::Vector3i triangle = _mesh.row(mesh_id);
-        int in = -1;
-        for (auto i = 0; i < 8; i++) {
-            auto& ch = node->_child[i];
-            bool inside = true;
-            for (auto vid : triangle) {
-                if (!ch->point_inside(_vertex.row(vid)))
-                    inside = false;
-            }
-            if (inside) {
-                in = i;
-                ch->face.push_back(mesh_id);
-            }
-        }
-        if (in == -1)
-            node->face.push_back(mesh_id);
-    }
-    for (auto& ch : node->_child) {
-        spread(ch);
-    }
-    node->delete_empty_child();
 }

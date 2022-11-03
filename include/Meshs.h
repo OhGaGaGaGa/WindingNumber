@@ -77,13 +77,13 @@ private:
         }
         for (auto i = 0; i < _mesh.rows(); i++) 
             _root->face.push_back(i);
-        init_octree(_root);
         spread(_root);
+        init_value(_root);
     }
 
     void spread(OcTreeNode* node);
     void init_aabb_tree();
-    void init_octree(OcTreeNode* node);
+    void init_value(OcTreeNode* node);
     double calc_solid_angle(int mesh_id, const Eigen::Vector3d& p);
     double calc_winding_number(const Eigen::Vector3d& q, OcTreeNode* node);
 
