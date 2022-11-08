@@ -51,8 +51,8 @@ public:
         _root(new OcTreeNode(_min_axis, _max_axis, 0)) {
             construct();
     }
-    double calc_winding_value(const Eigen::Vector3d& p);
-    double calc_winding_value_using_octree(const Eigen::Vector3d& p);
+    [[nodiscard]] double calc_winding_value(const Eigen::Vector3d& p) const;
+    [[nodiscard]] double calc_winding_value_using_octree(const Eigen::Vector3d& p) const;
 
 private:
     Eigen::MatrixXd _vertex;
@@ -77,15 +77,15 @@ private:
         }
         for (auto i = 0; i < _mesh.rows(); i++) 
             _root->face.push_back(i);
-        spread(_root);
-        init_value(_root);
+        spread(_root.get());
+        init_value(_root.get());
     }
 
-    void spread(std::unique_ptr<OcTreeNode>& node);
+    void spread(OcTreeNode* node);  
     void init_aabb_tree();
-    void init_value(std::unique_ptr<OcTreeNode>& node);
-    double calc_solid_angle(int mesh_id, const Eigen::Vector3d& p);
-    double calc_winding_number(const Eigen::Vector3d& q, std::unique_ptr<OcTreeNode>& node);
+    void init_value(OcTreeNode* node);
+    [[nodiscard]] double calc_solid_angle(int mesh_id, const Eigen::Vector3d& p) const;
+    double calc_winding_number(const Eigen::Vector3d& q, OcTreeNode* node) const;
 
     inline double calc_aera(const Eigen::Vector3i& mesh_row) {
         auto a = _vertex.row(mesh_row(0));

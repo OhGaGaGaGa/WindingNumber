@@ -49,14 +49,14 @@ void OcTreeNode::generate_child() {
 
 void OcTreeNode::delete_empty_child() {}
 
-double Meshs::calc_solid_angle(int mesh_id, const Eigen::Vector3d& p) {
+double Meshs::calc_solid_angle(int mesh_id, const Eigen::Vector3d& p) const {
     double solid_angle = igl::solid_angle(_vertex.row(_mesh(mesh_id, 0)), _vertex.row(_mesh(mesh_id, 1)), _vertex.row(_mesh(mesh_id, 2)), p);
     if (solid_angle > -0.5 - EPS && solid_angle < -0.5 + EPS || solid_angle > 0.5 - EPS && solid_angle < 0.5 + EPS)
         solid_angle = 0;
     return solid_angle;
 }
 
-double Meshs::calc_winding_value(const Eigen::Vector3d& p) {
+double Meshs::calc_winding_value(const Eigen::Vector3d& p) const {
     double tot_w = 0;
     if (p.rows() == 1) {
         for (int f = 0; f < _mesh.rows(); f++)
@@ -69,19 +69,19 @@ double Meshs::calc_winding_value(const Eigen::Vector3d& p) {
     return tot_w;
 }
 
-double Meshs::calc_winding_value_using_octree(const Eigen::Vector3d& p) {
+double Meshs::calc_winding_value_using_octree(const Eigen::Vector3d& p) const {
     if (p.rows() == 1)
-        return calc_winding_number(p.transpose(), _root);
-    return calc_winding_number(p, _root);
+        return calc_winding_number(p.transpose(), _root.get());
+    return calc_winding_number(p, _root.get());
 }
 
-double Meshs::calc_winding_number(const Eigen::Vector3d& q, std::unique_ptr<OcTreeNode>& node) {
+double Meshs::calc_winding_number(const Eigen::Vector3d& q, OcTreeNode* node) const {
     assert(node && "node cannot be nullptr");
     if ((q - node->center).norm() > ACCURACY * node->_max_dis)
         return node->winding_number(q);
     double val = 0;
     for (auto& ch : node->_child)
-        if (ch) val += calc_winding_number(q, ch);
+        if (ch) val += calc_winding_number(q, ch.get());
     for (auto mesh_id : node->face) 
         val += calc_solid_angle(mesh_id, q);
     return val;
@@ -98,7 +98,8 @@ void Meshs::init_aabb_tree() {
     tree.squared_distance(_vertex, _mesh, P, sqrD, I, C);
 }
 
-void Meshs::spread(std::unique_ptr<OcTreeNode>& node) {
+// node.get() to get OcTreeNode* 
+void Meshs::spread(OcTreeNode* node) {
     if (node->face.size() <= 2)
         return;
     node->generate_child();
@@ -123,19 +124,19 @@ void Meshs::spread(std::unique_ptr<OcTreeNode>& node) {
             node->face.push_back(mesh_id);
     }
     for (auto& ch : node->_child) {
-        spread(ch);
+        spread(ch.get());
     }
     node->delete_empty_child();
 }
 
-void Meshs::init_value(std::unique_ptr<OcTreeNode>& node) {
+void Meshs::init_value(OcTreeNode* node) {
     if (!node) return;
     double sum_aera = 0;
     assert(node->normal.norm() == 0 && "Length of normal should be 0. ");
     assert(node->center.norm() == 0 && "Center should be (0, 0, 0). ");
     if (node->child_count) {
         for (auto& ch : node->_child) {
-            init_value(ch);
+            init_value(ch.get());
         }
         for (auto& ch : node->_child) {
             if (-EPS < ch->aera && ch->aera < EPS) {

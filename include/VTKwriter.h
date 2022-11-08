@@ -10,13 +10,13 @@
 
 class VTKwriter {
 public:
-    VTKwriter(const char* file, const Eigen::MatrixXd& v, const std::vector<int>& category) : 
+    VTKwriter(const std::string& file, const Eigen::MatrixXd& v, const std::vector<int>& category) : 
         _out(file), _vertex(v), _category(category) {
             check_asserts();
     }
 
 
-    VTKwriter(const char* file, const Eigen::MatrixXd& v, const Eigen::MatrixXi& grid, const std::vector<double>& wn) : 
+    VTKwriter(const std::string& file, const Eigen::MatrixXd& v, const Eigen::MatrixXi& grid, const std::vector<double>& wn) : 
         _out(file), _vertex(v), _grid(grid), _wn(wn) {
             check_asserts();
     }

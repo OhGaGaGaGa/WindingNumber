@@ -1,16 +1,11 @@
+// Rename this file
+
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
-#include <Eigen/Core>
-#include "Constants.h"
+#include "WindingNumber.h"
 
-namespace ramdom_point_and_generate_grid {
-
-    // TODO: inline
-    inline double random_from_to(double left, double right) {
-        return left + (right - left) * rand() / RAND_MAX;
-    }
-
+namespace generate_ramdom_points {
     Eigen::MatrixXd random_points(int cnt, double l0, double r0, double l1, double r1, double l2, double r2) {
         Eigen::MatrixXd ret(cnt, 3);
         for (int i = 0; i < cnt; i++) {
@@ -36,12 +31,12 @@ namespace ramdom_point_and_generate_grid {
             min2 - PADDING, max2 + PADDING
         );
     }
+}
 
-    inline int get_point_id(int i, int j, int k) {
-        return (int)(i * (DIVI_Y + 1) * (DIVI_Z + 1) + j * (DIVI_Z + 1) + k);
-    }
-
-    void generate_grid(const Eigen::MatrixXd& inputV, Eigen::MatrixXd& gridV, Eigen::MatrixXi& gridCube) {
+namespace generate_grid {
+    std::tuple<Eigen::MatrixXd, Eigen::MatrixXi> generate_grid(const Eigen::MatrixXd& inputV) {
+        Eigen::MatrixXd gridV;
+        Eigen::MatrixXi gridCube;
         double min0 = inputV.col(0).minCoeff() - PADDING;
         double max0 = inputV.col(0).maxCoeff() + PADDING;
         double min1 = inputV.col(1).minCoeff() - PADDING;
@@ -72,6 +67,24 @@ namespace ramdom_point_and_generate_grid {
                 }
             }
         }
+        return std::make_tuple(gridV, gridCube);
     }
+}
 
+namespace winding_number {
+    std::tuple<std::vector<double>, std::vector<int>> process_winding_number(const Eigen::MatrixXd& testV, const Meshs& meshs){
+        std::vector<double> w (testV.rows());
+        std::vector<int> judge(testV.rows());
+
+        std::cout << "testV.rows(): " << testV.rows() << '\n';
+
+        // Winding Number 
+        for (int i = 0; i < testV.rows(); i++) {
+            w[i] = meshs.calc_winding_value_using_octree(testV.row(i));
+            judge[i] = calc_category(w[i]);
+        }
+        std::cout << "Calculated Winding Number. \n";
+
+        return std::make_tuple(w, judge);
+    }
 }
