@@ -10,7 +10,7 @@
 struct OcTreeNode {
     std::array<double, 3> _min_axis;
     std::array<double, 3> _max_axis;
-    std::array<OcTreeNode*, 8> _child;
+    std::array<std::unique_ptr<OcTreeNode>, 8> _child;
     std::vector<int> face;
     int child_count{0};
     int _depth;
@@ -63,7 +63,7 @@ private:
 
     const std::array<double, 3> _min_axis;
     const std::array<double, 3> _max_axis;
-    OcTreeNode* _root;
+    std::unique_ptr<OcTreeNode> _root;
 
     void construct() {
         assert(_mesh.cols() == 3 && "Only support 3D data. ");
@@ -81,11 +81,11 @@ private:
         init_value(_root);
     }
 
-    void spread(OcTreeNode* node);
+    void spread(std::unique_ptr<OcTreeNode>& node);
     void init_aabb_tree();
-    void init_value(OcTreeNode* node);
+    void init_value(std::unique_ptr<OcTreeNode>& node);
     double calc_solid_angle(int mesh_id, const Eigen::Vector3d& p);
-    double calc_winding_number(const Eigen::Vector3d& q, OcTreeNode* node);
+    double calc_winding_number(const Eigen::Vector3d& q, std::unique_ptr<OcTreeNode>& node);
 
     inline double calc_aera(const Eigen::Vector3i& mesh_row) {
         auto a = _vertex.row(mesh_row(0));

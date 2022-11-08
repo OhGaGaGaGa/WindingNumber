@@ -34,15 +34,15 @@ void OcTreeNode::generate_child() {
     std::array<double, 3> mid {(_min_axis[0] + _max_axis[0]) / 2, (_min_axis[1] + _max_axis[1]) / 2, (_min_axis[2] + _max_axis[2]) / 2};
     auto& min = _min_axis;
     auto& max = _max_axis;
-    _child[0] = new OcTreeNode({min[0], min[1], min[2]}, {mid[0], mid[1], mid[2]}, _depth + 1);
-    _child[1] = new OcTreeNode({mid[0], min[1], min[2]}, {max[0], mid[1], mid[2]}, _depth + 1);
-    _child[2] = new OcTreeNode({mid[0], mid[1], min[2]}, {max[0], max[1], mid[2]}, _depth + 1);
-    _child[3] = new OcTreeNode({min[0], mid[1], min[2]}, {mid[0], max[1], mid[2]}, _depth + 1);
+    _child[0] = std::make_unique<OcTreeNode>(std::array<double, 3>{min[0], min[1], min[2]}, std::array<double, 3>{mid[0], mid[1], mid[2]}, _depth + 1);
+    _child[1] = std::make_unique<OcTreeNode>(std::array<double, 3>{mid[0], min[1], min[2]}, std::array<double, 3>{max[0], mid[1], mid[2]}, _depth + 1);
+    _child[2] = std::make_unique<OcTreeNode>(std::array<double, 3>{mid[0], mid[1], min[2]}, std::array<double, 3>{max[0], max[1], mid[2]}, _depth + 1);
+    _child[3] = std::make_unique<OcTreeNode>(std::array<double, 3>{min[0], mid[1], min[2]}, std::array<double, 3>{mid[0], max[1], mid[2]}, _depth + 1);
 
-    _child[4] = new OcTreeNode({min[0], min[1], mid[2]}, {mid[0], mid[1], max[2]}, _depth + 1);
-    _child[5] = new OcTreeNode({mid[0], min[1], mid[2]}, {max[0], mid[1], max[2]}, _depth + 1);
-    _child[6] = new OcTreeNode({mid[0], mid[1], mid[2]}, {max[0], max[1], max[2]}, _depth + 1);
-    _child[7] = new OcTreeNode({min[0], mid[1], mid[2]}, {mid[0], max[1], max[2]}, _depth + 1);
+    _child[4] = std::make_unique<OcTreeNode>(std::array<double, 3>{min[0], min[1], mid[2]}, std::array<double, 3>{mid[0], mid[1], max[2]}, _depth + 1);
+    _child[5] = std::make_unique<OcTreeNode>(std::array<double, 3>{mid[0], min[1], mid[2]}, std::array<double, 3>{max[0], mid[1], max[2]}, _depth + 1);
+    _child[6] = std::make_unique<OcTreeNode>(std::array<double, 3>{mid[0], mid[1], mid[2]}, std::array<double, 3>{max[0], max[1], max[2]}, _depth + 1);
+    _child[7] = std::make_unique<OcTreeNode>(std::array<double, 3>{min[0], mid[1], mid[2]}, std::array<double, 3>{mid[0], max[1], max[2]}, _depth + 1);
 
     child_count = 8;
 }
@@ -58,29 +58,33 @@ double Meshs::calc_solid_angle(int mesh_id, const Eigen::Vector3d& p) {
 
 double Meshs::calc_winding_value(const Eigen::Vector3d& p) {
     double tot_w = 0;
-    for (int f = 0; f < _mesh.rows(); f++)
-        tot_w += calc_solid_angle(f, p);
+    if (p.rows() == 1) {
+        for (int f = 0; f < _mesh.rows(); f++)
+            tot_w += calc_solid_angle(f, p.transpose());
+    }
+    else {
+        for (int f = 0; f < _mesh.rows(); f++)
+            tot_w += calc_solid_angle(f, p);
+    }
     return tot_w;
 }
 
 double Meshs::calc_winding_value_using_octree(const Eigen::Vector3d& p) {
+    if (p.rows() == 1)
+        return calc_winding_number(p.transpose(), _root);
     return calc_winding_number(p, _root);
 }
 
-double Meshs::calc_winding_number(const Eigen::Vector3d& q, OcTreeNode* node) {
+double Meshs::calc_winding_number(const Eigen::Vector3d& q, std::unique_ptr<OcTreeNode>& node) {
     assert(node && "node cannot be nullptr");
     if ((q - node->center).norm() > ACCURACY * node->_max_dis)
         return node->winding_number(q);
-    else {
-        if (node->_depth > 6) 
-            std::cout << node->_depth << " ";
-        double val = 0;
-        for (auto ch : node->_child)
-            if (ch) val += calc_winding_number(q, ch);
-        for (auto mesh_id : node->face) 
-                val += calc_solid_angle(mesh_id, q);
-        return val;
-    }
+    double val = 0;
+    for (auto& ch : node->_child)
+        if (ch) val += calc_winding_number(q, ch);
+    for (auto mesh_id : node->face) 
+        val += calc_solid_angle(mesh_id, q);
+    return val;
 }
 
 void Meshs::init_aabb_tree() {
@@ -94,7 +98,7 @@ void Meshs::init_aabb_tree() {
     tree.squared_distance(_vertex, _mesh, P, sqrD, I, C);
 }
 
-void Meshs::spread(OcTreeNode* node) {
+void Meshs::spread(std::unique_ptr<OcTreeNode>& node) {
     if (node->face.size() <= 2)
         return;
     node->generate_child();
@@ -124,7 +128,7 @@ void Meshs::spread(OcTreeNode* node) {
     node->delete_empty_child();
 }
 
-void Meshs::init_value(OcTreeNode* node) {
+void Meshs::init_value(std::unique_ptr<OcTreeNode>& node) {
     if (!node) return;
     double sum_aera = 0;
     assert(node->normal.norm() == 0 && "Length of normal should be 0. ");
@@ -135,7 +139,6 @@ void Meshs::init_value(OcTreeNode* node) {
         }
         for (auto& ch : node->_child) {
             if (-EPS < ch->aera && ch->aera < EPS) {
-                delete ch;
                 ch = nullptr; node->child_count--;
             }
             else {

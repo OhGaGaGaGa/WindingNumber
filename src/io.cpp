@@ -1,6 +1,5 @@
 #include "IO.h"
 #include "VTKwriter.h"
-#include "VTKreader.h"
 #include <iostream>
 #include <algorithm>
 #include <map>
@@ -53,13 +52,14 @@ namespace io {
         }
 // #ifndef INPUT_FILE_PATH_MANUALLY
         if (argc == 1) {
-            input_filepath = "../files/fish-in.obj";
-            output_input_mesh_filepath = "../files/fish-input-mesh.obj";
-            test_point_filepath = "../files/fish-test-out.txt";
-            winding_value_filepath = "../files/fish-winding-number-out.txt";
-            random_points_filepath = "../files/fish-points-out.vtk";
-            grid_filepath = "../files/fish-grid-out.vtk";
-            iso_surface_filepath = "../files/fish-isosurface-out.obj";
+            std::string filename = "tiger";
+            input_filepath = "../files/" + filename + "-in.obj";
+            output_input_mesh_filepath = "../files/" + filename + "-input-mesh.obj";
+            test_point_filepath = "../files/" + filename + "-test-out.txt";
+            winding_value_filepath = "../files/" + filename + "-winding-number-out.txt";
+            random_points_filepath = "../files/" + filename + "-points-out.vtk";
+            grid_filepath = "../files/" + filename + "-grid-out.vtk";
+            iso_surface_filepath = "../files/" + filename + "-isosurface-out.obj";
         }
 // #else
         else {
