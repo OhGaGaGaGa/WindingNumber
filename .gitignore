@@ -10,3 +10,4 @@ tmp*
 .idea
 cmake-build-*
 compile_commands.json
+backup*

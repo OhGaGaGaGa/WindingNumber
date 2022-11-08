@@ -1,5 +1,5 @@
 CompileFlags:                     # Tweak the parse settings
-  Add: [-fcoroutines-ts, -fopenmp=libiomp5, --gcc-toolchain=/usr] 
+  Add: [-fcoroutines-ts, -fopenmp=libiomp5, --gcc-toolchain=/usr/bin] 
   Remove: [-fcoroutines, -fconcepts-diagnostics-depth=2, -fopenmp]
 
 Diagnostics:

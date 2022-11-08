@@ -15,7 +15,6 @@ public:
             check_asserts();
     }
 
-
     VTKwriter(const std::string& file, const Eigen::MatrixXd& v, const Eigen::MatrixXi& grid, const std::vector<double>& wn) : 
         _out(file), _vertex(v), _grid(grid), _wn(wn) {
             check_asserts();
